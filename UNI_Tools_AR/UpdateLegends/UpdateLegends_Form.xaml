@@ -1,0 +1,16 @@
+﻿<Window x:Name="mainWindow" x:Class="UNI_Tools_AR.UpdateLegends.UpdateLegends_Form"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:UNI_Tools_AR.UpdateLegends"
+             mc:Ignorable="d" 
+             d:DesignHeight="120" d:DesignWidth="320" MinWidth="320" MinHeight="120" MaxWidth="320" MaxHeight="10" ResizeMode="NoResize" Title="Параметр картинки" VerticalContentAlignment="Center" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <TextBox x:Name="tbParameterName" HorizontalAlignment="Left" Margin="105,14,0,0" TextWrapping="Wrap" Text="Введите параметр" VerticalAlignment="Top" Width="179"/>
+        <Label Content="Имя параметра" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <Button Content="Ок" HorizontalAlignment="Left" Margin="60,40,0,0" VerticalAlignment="Top" Width="70" Height="20" Click="runButton"/>
+        <Button Content="Отмена" Margin="170,40,0,0" VerticalAlignment="Top" Height="20" HorizontalAlignment="Left" Width="70" Click="cancelButton"/>
+
+    </Grid>
+</Window>

@@ -1,0 +1,14 @@
+﻿<Window x:Class="UNI_Tools_AR.UpdateLegends.ProgressBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:UNI_Tools_AR.UpdateLegends"
+             mc:Ignorable="d" 
+             d:DesignHeight="120" d:DesignWidth="320" MinWidth="320" MinHeight="120" MaxWidth="320" MaxHeight="10" ResizeMode="NoResize" Title="Прогресс обновления картинок" VerticalContentAlignment="Center" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <ProgressBar x:Name="progressBar" Margin="30,20,30,0" ValueChanged="progressBar_ValueChanged" Foreground="#FFAEB7E8" Opacity="0.975" Height="32" VerticalAlignment="Top" Value="40" InputScope="Time" BorderBrush="#FFB1C9DE" Background="#FFDDEDF7"/>
+        <Label x:Name="labelInfo" Content="Label" Margin="0,23,0,0" HorizontalAlignment="Center" VerticalAlignment="Top" Width="246"/>
+        <Label x:Name="timerLabel" Content="Время 0 с" Margin="211,23,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="73"/>
+    </Grid>
+</Window>

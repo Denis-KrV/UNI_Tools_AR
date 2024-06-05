@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<RevitAddIns>
+	<AddIn Type='Application'>
+		<Name>UNI_Tools_AR</Name>
+		<Assembly></Assembly>
+		<AddInId>663CBB5C-EA1C-477B-866E-8724A12D1C06</AddInId>
+		<FullClassName>UNI_Tools_AR.MainApplication</FullClassName>
+		<VendorId>UNIPro</VendorId>
+		<VendorDescriprion><![CDATA[https://github.com/BlopFlop/]]></VendorDescriprion>
+	</AddIn>
+</RevitAddIns>
