@@ -118,8 +118,44 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="CoeffTable_16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CoeffTable_16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CoeffTable_32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CoeffTable_32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateFinishWall_16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateFinishWall_16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateFinishWall_32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateFinishWall_32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="DYNAMO_CreateImage_R21" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DYNAMO_CreateImage_R21.rfa;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="FinishCeiling_16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\FinishCeiling_16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="FinishCeiling_32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\FinishCeiling_32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="FinishFloor_16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\FinishFloor_16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="FinishFloor_32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\FinishFloor_32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="minus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\minus.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="plus" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\plus.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="UpdateCoeff_16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\UpdateCoeff_16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="UpdateCoeff_32x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\UpdateCoeff_32x32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="UpdateLegends_16x16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\UpdateLegends_16x16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

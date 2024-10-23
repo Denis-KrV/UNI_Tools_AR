@@ -5,7 +5,7 @@ VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UNI_Tools_AR", "UNI_Tools_AR\UNI_Tools_AR.csproj", "{C6631FE1-A9C9-4775-B230-E31E1AD90315}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "UNIToolsAR", "UNIToolsAR\UNIToolsAR.vdproj", "{97E9582E-993E-4C70-9DA4-C89B24ABF763}"
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "UNI_Tools_AR_Setup", "UNI_Tools_AR_Setup\UNI_Tools_AR_Setup.vdproj", "{09BA79D2-FE7D-45A9-8878-965B167C7E73}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,8 +17,8 @@ Global
 		{C6631FE1-A9C9-4775-B230-E31E1AD90315}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C6631FE1-A9C9-4775-B230-E31E1AD90315}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6631FE1-A9C9-4775-B230-E31E1AD90315}.Release|Any CPU.Build.0 = Release|Any CPU
-		{97E9582E-993E-4C70-9DA4-C89B24ABF763}.Debug|Any CPU.ActiveCfg = Debug
-		{97E9582E-993E-4C70-9DA4-C89B24ABF763}.Release|Any CPU.ActiveCfg = Release
+		{09BA79D2-FE7D-45A9-8878-965B167C7E73}.Debug|Any CPU.ActiveCfg = Debug
+		{09BA79D2-FE7D-45A9-8878-965B167C7E73}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

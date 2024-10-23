@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Autodesk.Revit.Attributes;
+﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using System.Collections.Generic;
 
 namespace UNI_Tools_AR.UpdateLegends
 {
@@ -17,27 +11,30 @@ namespace UNI_Tools_AR.UpdateLegends
     {
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
-            UIApplication uiapp = commandData.Application;
-            UIDocument uidoc = uiapp.ActiveUIDocument;
-            Document doc = uidoc.Document;
-            
+            Autodesk.Revit.UI.UIApplication uiapp = commandData.Application;
+            Autodesk.Revit.ApplicationServices.Application app = uiapp.Application;
+            Autodesk.Revit.UI.UIDocument uidoc = uiapp.ActiveUIDocument;
+            Autodesk.Revit.DB.Document doc = uidoc.Document;
+
+            Functions func = new Functions();
+
             Legends legends = new Legends(doc);
 
             string exceptionTitle = "Возникла ошибка";
 
-            Family family = legends.getFamilyCreateImage();
+            Family family = legends.GetFamilyCreateImage();
             if (family is null)
             {
-                TaskDialog.Show(exceptionTitle, 
-                    "Семейство рамки будет загружено, перед следующим запуском " 
+                TaskDialog.Show(exceptionTitle,
+                    "Семейство рамки будет загружено, перед следующим запуском "
                     + "программы расставьте эти рамки на необходимых легендах.");
-                legends.loadFamilyCreateImage();
+                legends.LoadFamilyCreateImage();
                 return Result.Succeeded;
             }
 
-            IList<View> legendsView = legends.allLegendsView();
-            IList<FamilyInstance> legendsInstance = legends.allLegendsInstance();
-            IList<Element> legendsComponent = legends.allLegendsComponent();
+            IList<View> legendsView = legends.AllLegendsView();
+            IList<FamilyInstance> legendsInstance = legends.AllLegendsInstance();
+            IList<Element> legendsComponent = legends.AllLegendsComponent();
 
             if (legendsView is null)
             {
@@ -57,8 +54,11 @@ namespace UNI_Tools_AR.UpdateLegends
                 TaskDialog.Show(exceptionTitle, exceptMessage);
                 return Result.Failed;
             }
-
-            UpdateLegends_Form form = new UpdateLegends_Form(doc);
+            else if (!func.CheckUniqueTypeElmenetsFromLegendComponent(doc, uidoc, legends.CreateLegendViewItems()))
+            {
+                return Result.Failed;
+            }
+            UpdateLegends_Form form = new UpdateLegends_Form(doc, app);
             form.ShowDialog();
 
             return Result.Succeeded;

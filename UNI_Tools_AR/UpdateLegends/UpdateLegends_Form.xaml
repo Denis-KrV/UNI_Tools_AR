@@ -5,12 +5,16 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:UNI_Tools_AR.UpdateLegends"
              mc:Ignorable="d" 
-             d:DesignHeight="120" d:DesignWidth="320" MinWidth="320" MinHeight="120" MaxWidth="320" MaxHeight="10" ResizeMode="NoResize" Title="Параметр картинки" VerticalContentAlignment="Center" WindowStartupLocation="CenterScreen">
+             d:DesignHeight="200" d:DesignWidth="320" MinWidth="320" MinHeight="200" MaxWidth="320" MaxHeight="200" ResizeMode="NoResize" Title="Параметр картинки" VerticalContentAlignment="Center" WindowStartupLocation="CenterScreen">
     <Grid>
-        <TextBox x:Name="tbParameterName" HorizontalAlignment="Left" Margin="105,14,0,0" TextWrapping="Wrap" Text="Введите параметр" VerticalAlignment="Top" Width="179"/>
-        <Label Content="Имя параметра" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-        <Button Content="Ок" HorizontalAlignment="Left" Margin="60,40,0,0" VerticalAlignment="Top" Width="70" Height="20" Click="runButton"/>
-        <Button Content="Отмена" Margin="170,40,0,0" VerticalAlignment="Top" Height="20" HorizontalAlignment="Left" Width="70" Click="cancelButton"/>
+        <TextBox x:Name="tbParameterName" HorizontalAlignment="Left" Margin="108,10,0,0" TextWrapping="Wrap" Text="Введите параметр" VerticalAlignment="Top" Width="179"/>
+        <Label Content="Имя параметра:" HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top"/>
+        <Button Content="Ок" HorizontalAlignment="Center" Margin="-90,0,0,20" Width="70" Click="runButton" Height="20" VerticalAlignment="Bottom"/>
+        <Button Content="Отмена" Margin="90,0,0,20" VerticalAlignment="Bottom" Height="20" HorizontalAlignment="Center" Width="70" Click="cancelButton"/>
+        <CheckBox x:Name="isRenameView" Content="Переименование легенды в имя типа" HorizontalAlignment="Left" Margin="25,0,0,110" VerticalAlignment="Bottom" IsChecked="True" ClickMode="Press"/>
+        <CheckBox x:Name="deleteImageParameter" Content="Отчистка параметра у элементов без легенд" HorizontalAlignment="Left" Margin="25,0,0,90" VerticalAlignment="Bottom" IsChecked="True" ClickMode="Press"/>
+        <CheckBox x:Name="updateShedules" Content="Обновление спецификаций" HorizontalAlignment="Left" Margin="25,0,0,70" VerticalAlignment="Bottom" ClickMode="Press" AutomationProperties.IsOffscreenBehavior="Offscreen"/>
+        <CheckBox x:Name="synchronizeDocument" Content="Синхронизация при завершении" HorizontalAlignment="Left" Margin="25,0,0,50" VerticalAlignment="Bottom"/>
 
     </Grid>
 </Window>

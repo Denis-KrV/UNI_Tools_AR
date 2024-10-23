@@ -1,41 +1,35 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace UNI_Tools_AR.UpdateLegends
 {
     internal class UpdaterImage
     {
-        static Document _doc;
-        static IList<LegendViewItem> _legends;
-        static Functions _func;
+        private Document _doc { get; }
+        private IList<LegendViewItem> _legends { get; }
+        private Functions _func { get; } = new Functions();
 
         public UpdaterImage(Document doc, IList<LegendViewItem> legendViewItems)
         {
             _doc = doc;
             _legends = legendViewItems;
-            _func = new Functions();
         }
 
-        public Result updateImages(string parameterName)
+        public Result UpdateImages(string parameterName)
         {
             const string turnOffFamParName = "CreateImage";
             _func.createImageFolder();
+            ProgressBar progressBar = new ProgressBar(_legends.Count(), "Обработка легенд");
+            progressBar.Show();
 
-            using (Transaction t = new Transaction(_doc, "Загрузка семейства рамки"))
+            using (Transaction t = new Transaction(_doc, "Обновление легенд"))
             {
                 t.Start();
                 try
                 {
-                    ProgressBar progressBar = new ProgressBar(_legends.Count());
-                    progressBar.Show();
                     foreach (LegendViewItem legendViewItem in _legends)
                     {
                         Autodesk.Revit.DB.View legendView = legendViewItem.legendView;
@@ -47,17 +41,17 @@ namespace UNI_Tools_AR.UpdateLegends
                         legendViewItem.legendInstance.LookupParameter(turnOffFamParName).Set(0);
                         _doc.Regenerate();
 
-                        string pathImage = createImage(legendViewItem.legendView.Id);
-                        ImageType elementImageType = loadImage(pathImage);
+                        string pathImage = CreateImage(legendViewItem.legendView.Id);
+                        ImageType elementImageType = LoadImage(pathImage);
 
-                        Parameter parameter = _func.getImageParameter(legendViewItem.getTypeFromLegendComponent(), parameterName);
+                        Parameter parameter = _func.GetImageParameter(legendViewItem.GetTypeFromLegendComponent(), parameterName);
                         parameter.Set(elementImageType.Id);
 
                         legendViewItem.legendInstance.LookupParameter(turnOffFamParName).Set(1);
                         _doc.Regenerate();
                     }
                     t.Commit();
-                    TaskDialog.Show("Информация", $"Обновлено {_legends.Count} картинок из легенд.");
+                    TaskDialog.Show("Информация", $"Обновлено {_legends.Count} картинок из легенд.\n{progressBar.timerLabel.Content}");
                     _func.deleteImageFolder();
                     progressBar.Close();
                     return Result.Succeeded;
@@ -67,17 +61,17 @@ namespace UNI_Tools_AR.UpdateLegends
                     t.RollBack();
                     TaskDialog.Show("Ошибка", "Обновление легенд не произошло");
                     _func.deleteImageFolder();
+                    progressBar.Close();
                     return Result.Failed;
                 }
             }
         }
-        public string createImage(ElementId viewId)
+        public string CreateImage(ElementId viewId)
         {
-            IList<ElementId> listViewId = new List<ElementId>();
-            listViewId.Add(viewId);
+            IList<ElementId> listViewId = new List<ElementId>() { viewId };
 
             string prefixImage = "CreateImage";
-            string imagePath = Path.Combine(_func.getImageFolder(), prefixImage);
+            string imagePath = Path.Combine(_func.GetImageFolder(), prefixImage);
 
             ImageExportOptions exportOptions = new ImageExportOptions();
 
@@ -96,11 +90,11 @@ namespace UNI_Tools_AR.UpdateLegends
             return resultImagePath;
         }
 
-        public ImageType loadImage(string pathImageFile)
+        public ImageType LoadImage(string pathImageFile)
         {
             ImageTypeOptions imageTypeOptions = new ImageTypeOptions(pathImageFile, false, ImageTypeSource.Import);
             string nameFileImage = Path.GetFileName(pathImageFile);
-            Dictionary<string, ImageType> imageTypes = _func.getAllImagesInPorject(_doc);
+            Dictionary<string, ImageType> imageTypes = _func.GetAllImagesInPorject(_doc);
 
             if (imageTypes.ContainsKey(nameFileImage))
             {

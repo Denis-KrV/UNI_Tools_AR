@@ -1,15 +1,8 @@
-﻿using System;
+﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Media.Imaging;
-using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
-using UNI_Tools_AR.Properties;
 
 namespace UNI_Tools_AR.UpdateLegends
 {
@@ -17,17 +10,16 @@ namespace UNI_Tools_AR.UpdateLegends
     {
         const string familyNameLegend = "DYNAMO_CreateImage_R21";
         const string familyFileLegend = "DYNAMO_CreateImage_R21.rfa";
-        static ElementId componentCetegoryId = new ElementId(-2000575);
+        private ElementId componentCetegoryId { get; } = new ElementId(-2000575);
 
-        static Document _doc;
-        static Functions _func;
+        private Document _doc { get; }
+        private Functions _func { get; } = new Functions();
 
         public Legends(Document doc)
         {
             _doc = doc;
-            _func = new Functions();
         }
-        public IList<View> allLegendsView()
+        public IList<View> AllLegendsView()
         {
             ElementClassFilter filterLegendsView = new ElementClassFilter(typeof(View));
             FilteredElementCollector collector = new FilteredElementCollector(_doc);
@@ -50,7 +42,7 @@ namespace UNI_Tools_AR.UpdateLegends
                 Element view = _doc.GetElement(viewId);
                 if (view is View)
                 {
-                    legendViews.Add((View)view);  
+                    legendViews.Add((View)view);
                 }
             }
             if (legendViews.Count == 0)
@@ -59,8 +51,7 @@ namespace UNI_Tools_AR.UpdateLegends
             }
             return legendViews;
         }
-
-        public Family getFamilyCreateImage()
+        public Family GetFamilyCreateImage()
         {
             FilteredElementCollector collector = new FilteredElementCollector(_doc).OfClass(typeof(Family));
             foreach (Element family in collector)
@@ -73,7 +64,7 @@ namespace UNI_Tools_AR.UpdateLegends
             return null;
         }
 
-        public void loadFamilyCreateImage()
+        public void LoadFamilyCreateImage()
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
             string resourceName = $"UNI_Tools_AR.Resources.{familyFileLegend}";
@@ -98,10 +89,10 @@ namespace UNI_Tools_AR.UpdateLegends
             }
         }
 
-        public IList<FamilyInstance> allLegendsInstance()
+        public IList<FamilyInstance> AllLegendsInstance()
         {
             ElementClassFilter filterFamilyInstance = new ElementClassFilter(typeof(FamilyInstance));
-            Family legendFamily = getFamilyCreateImage();
+            Family legendFamily = GetFamilyCreateImage();
 
             IList<ElementId> instanceLegendIds = legendFamily.GetDependentElements(filterFamilyInstance);
 
@@ -118,21 +109,21 @@ namespace UNI_Tools_AR.UpdateLegends
             return null;
         }
 
-        public IList<Element> allLegendsComponent()
+        public IList<Element> AllLegendsComponent()
         {
-            FilteredElementCollector collector = new FilteredElementCollector(_doc).OfCategoryId(componentCetegoryId);
-            IList<Element> legendComponents = collector.ToElements();
+            FilteredElementCollector collector = new FilteredElementCollector(_doc);
+            IList<Element> legendComponents = collector.OfCategoryId(componentCetegoryId).ToElements();
             if (legendComponents.Count > 0)
             {
                 return legendComponents;
             }
             return null;
         }
-        public IList<LegendViewItem> createLegendViewItems()
+        public IList<LegendViewItem> CreateLegendViewItems()
         {
-            IList<View> legendsView = allLegendsView();
-            IList<FamilyInstance> legendsInstance = allLegendsInstance();
-            IList<Element> legendsComponent = allLegendsComponent();
+            IList<View> legendsView = AllLegendsView();
+            IList<FamilyInstance> legendsInstance = AllLegendsInstance();
+            IList<Element> legendsComponent = AllLegendsComponent();
 
             Dictionary<ElementId, View> viewItems = new Dictionary<ElementId, View>();
             foreach (View legend in legendsView)
@@ -189,7 +180,7 @@ namespace UNI_Tools_AR.UpdateLegends
             this.legendInstance = legendInstance;
             this.legendComponent = legendComponent;
         }
-        public Element getTypeFromLegendComponent()
+        public Element GetTypeFromLegendComponent()
         {
             Parameter parameterElTypeFromLegendComponent = legendComponent
                 .get_Parameter(BuiltInParameter.LEGEND_COMPONENT);

@@ -1,20 +1,6 @@
-﻿using Autodesk.Revit.DB;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Forms;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace UNI_Tools_AR.UpdateLegends
 {
@@ -25,20 +11,22 @@ namespace UNI_Tools_AR.UpdateLegends
     {
         static int _counter;
         static int _countItems;
+        static string _nameEvent;
         int count = 0;
-        public ProgressBar(int countItems)
+        public ProgressBar(int countItems, string nameEvent)
         {
             InitializeComponent();
             _countItems = countItems;
             progressBar.Maximum = _countItems;
             _counter = 0;
+            _nameEvent = nameEvent;
 
             Timer timer = new Timer();
-            timer.Tick += new EventHandler(timer_Tick);
+            timer.Tick += new EventHandler(timerTick);
             timer.Interval = 1000; // интервал в миллисекундах
             timer.Start();
         }
-        private void timer_Tick(object sender, EventArgs e)
+        private void timerTick(object sender, EventArgs e)
         {
             count++;
 
@@ -49,7 +37,7 @@ namespace UNI_Tools_AR.UpdateLegends
         public void valueChanged()
         {
             _counter++;
-            string content = $"Обработано легенд {_counter} из {_countItems}";
+            string content = $"{_nameEvent} {_counter} из {_countItems}";
             labelInfo.Content = content;
             progressBar.Value = _counter;
             System.Windows.Forms.Application.DoEvents();
