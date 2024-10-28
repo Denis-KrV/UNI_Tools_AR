@@ -5,17 +5,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace UNI_Tools_AR.CountInsolation
 {
     internal class InsolationObject
     {
+        private Functions _functions { get; set; }
+
         private Document _document;
         private SunAndShadowSettings _sunAndShadowObject;
 
         private Options gOptions => new Options {
             View = _document.ActiveView,
-
             IncludeNonVisibleObjects = true
         };
 
@@ -24,25 +26,24 @@ namespace UNI_Tools_AR.CountInsolation
             .Select(gElement => gElement)
             .ToList();
 
-        public XYZ CentralPoint => GetCentralPoint();
+        public IList<HermiteSpline> hermiteSplines => geometry
+            .Where(gElement => gElement is HermiteSpline)
+            .Select(gElement => gElement as HermiteSpline)
+            .ToList();
 
-        public IList<XYZ> SunTimePoint => GetSunTimePoints();
+        public XYZ CentralPoint => XYZ.Zero;
 
-        public InsolationObject(Document document, SunAndShadowSettings sunAndShadowObject)
+        public ReferenceIntersector referenceIntersector =>
+            new ReferenceIntersector(_document.ActiveView as View3D);
+
+        public InsolationObject(Document document, SunAndShadowSettings sunAndShadowObject, Functions functions)
         {
+            _functions = functions;
             _document = document;
             _sunAndShadowObject = sunAndShadowObject;
         }
 
-        private IList<XYZ> GetSunTimePoints()
-        {
-            return geometry
-                .Where(gElement => gElement is Point)
-                .Select(gElement => (gElement as Point).Coord)
-                .ToList();
-        }
-
-        private XYZ GetCentralPoint()
+        public IList<XYZ> GetSunTimePoints(XYZ insolationCountPoint)
         {
             IList<Line> geometryLines = geometry
                 .Where(gElement => gElement is Line)
@@ -60,7 +61,49 @@ namespace UNI_Tools_AR.CountInsolation
             XYZ fstPoint = maxLenghtLine.GetEndPoint(0);
             XYZ sndPoint = maxLenghtLine.GetEndPoint(1);
 
-            return (fstPoint + sndPoint) / 2;
+            XYZ centralPointCurrentSun = (fstPoint + sndPoint) / 2;
+
+            IList<XYZ> sunTimePoints = geometry
+                .Where(gElement => gElement is Point)
+                .Select(gElement => (gElement as Point).Coord - centralPointCurrentSun + insolationCountPoint)
+                .ToList();
+
+            XYZ fstArcPoint = sunTimePoints[0];
+            XYZ sndArcPoint = sunTimePoints[1];
+
+            XYZ pointInArc = sunTimePoints[(sunTimePoints.Count() / 2)];
+
+            Arc geometryArc = Arc.Create(fstArcPoint, sndArcPoint, pointInArc);
+
+            return geometryArc.Tessellate();
+        }
+
+        public IList<XYZ> ReturnNonIntersectionObject(XYZ insolationCountPoint)
+        {
+            IList<XYZ> result = new List<XYZ>();
+
+
+            IList<GeometryObject> geometryObjects = new List<GeometryObject> ();
+            foreach (XYZ point in GetSunTimePoints(insolationCountPoint))
+            {
+                ReferenceWithContext refs = referenceIntersector.FindNearest(insolationCountPoint, point);
+
+                if (refs is null)
+                {
+                    result.Add(point);
+                    geometryObjects.Add(Line.CreateBound(insolationCountPoint,point));
+                }
+            }
+
+            using (Transaction t = new Transaction(_document, "test"))
+            {
+                t.Start();
+                _functions.CreateDirectShape(_document, geometryObjects);
+                t.Commit();
+            }
+
+            return result;
         }
     }
+
 }

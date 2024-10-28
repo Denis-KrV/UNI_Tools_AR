@@ -52,5 +52,44 @@ namespace UNI_Tools_AR.CountInsolation
             }
             return null;
         }
+
+        public IList<XYZ> HalfPastPoint(IList<XYZ> points)
+        {
+            XYZ fstPoint = null;
+
+            IList<XYZ> result = new List<XYZ>();
+            foreach (XYZ point in points)
+            {
+                if (fstPoint is null)
+                {
+                    fstPoint = point;
+                    result.Add(point);
+                    continue;
+                }
+
+
+                XYZ centerPoint = (fstPoint + point) / 2;
+
+                result.Add(centerPoint);
+                result.Add(point);
+
+                fstPoint = point;
+            }
+
+            return result;
+        }
+
+        public IList<Element> GetAllWindows()
+        {
+            ElementId categoryIdWindow = new ElementId(-2000014);
+            
+            IList<Element> windows = new FilteredElementCollector(_document, _document.ActiveView.Id)
+                .OfCategoryId(categoryIdWindow)
+                .WhereElementIsNotElementType()
+                .ToElements();
+
+            return windows;
+        }
+
     }
 }

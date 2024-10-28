@@ -70,8 +70,10 @@
     <Compile Include="CountCoefficient\CreateCoefficentCommand.cs" />
     <Compile Include="CountCoefficient\Functions.cs" />
     <Compile Include="CountCoefficient\JsonItem.cs" />
+    <Compile Include="CountInsolation\BaseRevitDocumentClass.cs" />
     <Compile Include="CountInsolation\CountInsolationCommand.cs" />
     <Compile Include="CountInsolation\Functions.cs" />
+    <Compile Include="CountInsolation\GlassObjects.cs" />
     <Compile Include="CountInsolation\InsolationObject.cs" />
     <Compile Include="CreateFinishWithStair\BuilderFinishStair.cs" />
     <Compile Include="CreateFinishWithStair\CreateFinishStairCommand.cs" />

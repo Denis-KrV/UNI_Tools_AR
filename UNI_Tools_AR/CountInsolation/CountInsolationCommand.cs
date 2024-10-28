@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.NetworkInformation;
+using System.Windows;
 
 namespace UNI_Tools_AR.CountInsolation
 {
@@ -26,7 +27,17 @@ namespace UNI_Tools_AR.CountInsolation
 
             Functions func = new Functions(uiApplication, application, uiDocument, document);
 
+            View activeView = document.ActiveView;
+
             SunAndShadowSettings sunAndShadowSettings = func.GetSunAndShadowSettings();
+
+            if (!(activeView.ViewType is ViewType.ThreeD))
+            {
+                string titleDialog = "Ошибка";
+                string exceptMessage = "Активный вид должен быть 3Д видом";
+                TaskDialog.Show(titleDialog, exceptMessage);
+                return Result.Failed;
+            }
 
             if (sunAndShadowSettings is null)
             {
@@ -36,18 +47,30 @@ namespace UNI_Tools_AR.CountInsolation
                 return Result.Failed;
             }
 
-            InsolationObject insolationObject = new InsolationObject(document, sunAndShadowSettings);
+            InsolationObject insolationObject = new InsolationObject(document, sunAndShadowSettings, func);
+            GlassObjects glassObjects = new GlassObjects(uiApplication, application, uiDocument, document);
 
-            using (Transaction t = new Transaction(document, "Test"))
-            {
-                t.Start();
-                IList<GeometryObject> sunLines = insolationObject.SunTimePoint
-                    .Select(xyz => Line.CreateBound(insolationObject.CentralPoint, xyz) as GeometryObject)
-                    .ToList();
+            XYZ centralPoint = insolationObject.CentralPoint;
 
-                func.CreateDirectShape(document, sunLines);
-                t.Commit();
-            }
+            XYZ windowPoint = new XYZ(-0.234484077, -3.875063079, 9.678477690);
+
+            IList<XYZ> insolationPoint = insolationObject.ReturnNonIntersectionObject(windowPoint);
+
+            //using (Transaction t = new Transaction(document, "Test"))
+            //{
+            //    t.Start();
+
+            //    XYZ windowPoint = glassObjects.GetCenterPointWindows().Last();
+
+            //    IList<XYZ> insolationPoint = insolationObject.ReturnNonIntersectionObject(windowPoint);
+
+            //    IList<GeometryObject> geometryArcObjects = insolationPoint.Select(xyz => Line.CreateBound(windowPoint, xyz)).ToList<GeometryObject>();
+            //    geometryArcObjects.Add(Autodesk.Revit.DB.Point.Create(XYZ.Zero) );
+
+            //    func.CreateDirectShape(document, geometryArcObjects);
+
+            //    t.Commit();
+            //}
 
             return Result.Succeeded;
         }
