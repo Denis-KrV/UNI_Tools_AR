@@ -12,8 +12,9 @@ namespace UNI_Tools_AR.CountInsolation
 {
     internal class GlassObjects : BaseRevitDocumentClass
     {
-        private IList<Element> windows => _functions.GetAllWindows();
-        private Options _options => new Options { IncludeNonVisibleObjects = true };
+        public IList<GlassObject> windows => _functions.GetAllWindows()
+            .Select(element => new GlassObject(element, _functions.GetCenterPointElement(element)))
+            .ToList();
 
         public GlassObjects(
             Autodesk.Revit.UI.UIApplication uiApplication,
@@ -27,16 +28,18 @@ namespace UNI_Tools_AR.CountInsolation
             _document = document;
             _uiDocument = uiDocument;
         }
+    }
 
-        public IList<XYZ> GetCenterPointWindows()
+    class GlassObject
+    {
+        public Element glassObject;
+        public XYZ centerPoint;
+        public IList<SunSegment> segments = new List<SunSegment>();
+
+        public GlassObject(Element glassObject, XYZ centerPoint)
         {
-            IList<XYZ> result = new List<XYZ>();
-            foreach (Element window in windows)
-            {
-                BoundingBoxXYZ boundingBoxXYZ = window.get_Geometry(_options).GetBoundingBox();
-                result.Add((boundingBoxXYZ.Min + boundingBoxXYZ.Max) / 2);
-            }
-            return result;
+            this.glassObject = glassObject;
+            this.centerPoint = centerPoint;
         }
     }
 }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -11,7 +12,7 @@ namespace UNI_Tools_AR.CountInsolation
 {
     internal class InsolationObject
     {
-        private Functions _functions { get; set; }
+        static private Functions _functions { get; set; }
 
         private Document _document;
         private SunAndShadowSettings _sunAndShadowObject;
@@ -34,7 +35,7 @@ namespace UNI_Tools_AR.CountInsolation
         public XYZ CentralPoint => XYZ.Zero;
 
         public ReferenceIntersector referenceIntersector =>
-            new ReferenceIntersector(_document.ActiveView as View3D);
+            new ReferenceIntersector(_document.ActiveView as View3D) { FindReferencesInRevitLinks = true };
 
         public InsolationObject(Document document, SunAndShadowSettings sunAndShadowObject, Functions functions)
         {
@@ -43,7 +44,7 @@ namespace UNI_Tools_AR.CountInsolation
             _sunAndShadowObject = sunAndShadowObject;
         }
 
-        public IList<XYZ> GetSunTimePoints(XYZ insolationCountPoint)
+        public IList<XYZ> GetSunTimePoints()
         {
             IList<Line> geometryLines = geometry
                 .Where(gElement => gElement is Line)
@@ -65,7 +66,7 @@ namespace UNI_Tools_AR.CountInsolation
 
             IList<XYZ> sunTimePoints = geometry
                 .Where(gElement => gElement is Point)
-                .Select(gElement => (gElement as Point).Coord - centralPointCurrentSun + insolationCountPoint)
+                .Select(gElement => (gElement as Point).Coord - centralPointCurrentSun)
                 .ToList();
 
             XYZ fstArcPoint = sunTimePoints[0];
@@ -75,35 +76,65 @@ namespace UNI_Tools_AR.CountInsolation
 
             Arc geometryArc = Arc.Create(fstArcPoint, sndArcPoint, pointInArc);
 
-            return geometryArc.Tessellate();
+
+            return _functions.HalfPastPoint(_functions.HalfPastPoint(geometryArc.Tessellate()));
         }
 
-        public IList<XYZ> ReturnNonIntersectionObject(XYZ insolationCountPoint)
+        public IList<SunSegment> ReturnNonIntersectionObject(XYZ insolationCountPoint)
         {
-            IList<XYZ> result = new List<XYZ>();
-
-
+            IList<SunSegment> result = new List<SunSegment>();
             IList<GeometryObject> geometryObjects = new List<GeometryObject> ();
-            foreach (XYZ point in GetSunTimePoints(insolationCountPoint))
+            IList<XYZ> segmentPoint = new List<XYZ>();
+            
+            XYZ fstPoint = null;
+            
+            foreach (XYZ point in GetSunTimePoints())
             {
-                ReferenceWithContext refs = referenceIntersector.FindNearest(insolationCountPoint, point);
+                ReferenceWithContext refs = referenceIntersector
+                    .FindNearest(insolationCountPoint, point.Normalize());
 
                 if (refs is null)
                 {
-                    result.Add(point);
-                    geometryObjects.Add(Line.CreateBound(insolationCountPoint,point));
+                    segmentPoint.Add(point);
+
+                    if (fstPoint is null)
+                    {
+                        fstPoint = point;
+                        continue;
+                    }
+
+                    fstPoint = point;
+                }
+                else
+                {
+                    if ((fstPoint != null))
+                    {
+                        fstPoint = null;
+
+                        SunSegment sunSegment = 
+                            new SunSegment(segmentPoint, _functions.GetSumAngleInPoints(segmentPoint));
+
+                        result.Add(sunSegment);
+
+                        segmentPoint = new List<XYZ>();
+                    }
                 }
             }
-
-            using (Transaction t = new Transaction(_document, "test"))
-            {
-                t.Start();
-                _functions.CreateDirectShape(_document, geometryObjects);
-                t.Commit();
-            }
-
+            
             return result;
         }
     }
+    class SunSegment
+    {
+        public XYZ fstPoint => points.First();
+        public XYZ sndPoint => points.Last();
 
+        public IList<XYZ> points;
+        public double angle;
+        public SunSegment(IList<XYZ> points, double angle)
+        { 
+            this.points = points; 
+            this.angle = angle; 
+        }
+    }
 }

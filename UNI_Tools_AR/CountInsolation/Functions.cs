@@ -17,6 +17,14 @@ namespace UNI_Tools_AR.CountInsolation
         private UIDocument _uiDocument;
         private Document _document;
 
+        private const int windowCategoryIntId = -2000014;
+
+        private Options _options => new Options 
+        { 
+            IncludeNonVisibleObjects = true, 
+            DetailLevel = ViewDetailLevel.Fine 
+        };
+
         public Functions(
             UIApplication uiApplication,
             Application application,
@@ -30,13 +38,30 @@ namespace UNI_Tools_AR.CountInsolation
             _document = documen;
         }
 
-        public void CreateDirectShape(Document document, IList<GeometryObject> gElements)
+        public DirectShape CreateDirectShape(Document document, IList<GeometryObject> gElements)
         {
             DirectShape directShape = DirectShape.CreateElement(document, new ElementId(-2000011));
             if (directShape.IsValidShape(gElements))
             {
                 directShape.SetShape(gElements);
             }
+            return directShape;
+        }
+
+        public bool CheckParameterInProject(string nameParameter)
+        {
+            Element windows = new FilteredElementCollector(_document)
+                .OfCategoryId(new ElementId(windowCategoryIntId))
+                .WhereElementIsNotElementType()
+                .First();
+        }
+
+        public bool CheckParameterInWindow(string nameParameter)
+        {
+            Element windows = new FilteredElementCollector(_document)
+                .OfCategoryId(new ElementId(windowCategoryIntId))
+                .WhereElementIsNotElementType()
+                .First();
         }
 
         public SunAndShadowSettings GetSunAndShadowSettings()
@@ -81,15 +106,47 @@ namespace UNI_Tools_AR.CountInsolation
 
         public IList<Element> GetAllWindows()
         {
-            ElementId categoryIdWindow = new ElementId(-2000014);
-            
             IList<Element> windows = new FilteredElementCollector(_document, _document.ActiveView.Id)
-                .OfCategoryId(categoryIdWindow)
+                .OfCategoryId(new ElementId(windowCategoryIntId))
                 .WhereElementIsNotElementType()
                 .ToElements();
 
             return windows;
         }
 
+        public XYZ GetCenterPointElement(Element element)
+        {
+            BoundingBoxXYZ boundingBoxXYZ = element
+                .get_Geometry(_options)
+                .GetBoundingBox();
+            return (boundingBoxXYZ.Max + boundingBoxXYZ.Min) / 2; 
+        }
+
+        public double ConvertRadToDegree(double radAngle)
+        {
+            return 180 * radAngle / Math.PI;
+        }
+
+        public double GetSumAngleInPoints(IList<XYZ> points)
+        {
+            XYZ fstPoint = null;
+
+            double angle = 0;
+
+            foreach (XYZ point in points)
+            {
+                if (fstPoint is null) 
+                { 
+                    fstPoint = point; 
+                    continue; 
+                }
+
+                double radAngle = fstPoint.AngleTo(point);
+                angle += ConvertRadToDegree(radAngle);
+
+                fstPoint = point;
+            }
+            return angle;
+        }
     }
 }

@@ -52,25 +52,28 @@ namespace UNI_Tools_AR.CountInsolation
 
             XYZ centralPoint = insolationObject.CentralPoint;
 
-            XYZ windowPoint = new XYZ(-0.234484077, -3.875063079, 9.678477690);
+            foreach (GlassObject window in glassObjects.windows)
+            {
+                using (Transaction t = new Transaction(document, "Test"))
+                {
+                    t.Start();
+                    XYZ centerPoint = window.centerPoint;
+                    IList<SunSegment> insolationSegments = insolationObject.ReturnNonIntersectionObject(centerPoint);
 
-            IList<XYZ> insolationPoint = insolationObject.ReturnNonIntersectionObject(windowPoint);
+                    foreach (SunSegment insolation in insolationSegments)
+                    {
+                        IList<GeometryObject> geometryObjects = insolation.points
+                            .Select(xyz => Line.CreateBound(centerPoint, xyz + centerPoint))
+                            .ToList<GeometryObject>();
 
-            //using (Transaction t = new Transaction(document, "Test"))
-            //{
-            //    t.Start();
+                        DirectShape directShape = func.CreateDirectShape(document, geometryObjects);
+                        directShape.LookupParameter("Комментарии").Set($"{insolation.angle}");
+                    }
+                    t.Commit();
+                }
+            }
 
-            //    XYZ windowPoint = glassObjects.GetCenterPointWindows().Last();
 
-            //    IList<XYZ> insolationPoint = insolationObject.ReturnNonIntersectionObject(windowPoint);
-
-            //    IList<GeometryObject> geometryArcObjects = insolationPoint.Select(xyz => Line.CreateBound(windowPoint, xyz)).ToList<GeometryObject>();
-            //    geometryArcObjects.Add(Autodesk.Revit.DB.Point.Create(XYZ.Zero) );
-
-            //    func.CreateDirectShape(document, geometryArcObjects);
-
-            //    t.Commit();
-            //}
 
             return Result.Succeeded;
         }
