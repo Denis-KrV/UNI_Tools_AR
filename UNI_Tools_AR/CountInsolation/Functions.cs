@@ -48,20 +48,49 @@ namespace UNI_Tools_AR.CountInsolation
             return directShape;
         }
 
-        public bool CheckParameterInProject(string nameParameter)
+        public bool CheckParameterPorjectInDocument(string nameParameter)
         {
-            Element windows = new FilteredElementCollector(_document)
+            Element window = new FilteredElementCollector(_document)
                 .OfCategoryId(new ElementId(windowCategoryIntId))
                 .WhereElementIsNotElementType()
                 .First();
-        }
 
-        public bool CheckParameterInWindow(string nameParameter)
-        {
-            Element windows = new FilteredElementCollector(_document)
-                .OfCategoryId(new ElementId(windowCategoryIntId))
-                .WhereElementIsNotElementType()
-                .First();
+            foreach (KeyValuePair<Definition, Binding> keyValuePair in _document.ParameterBindings)
+            {
+                InternalDefinition definition = keyValuePair.Key as InternalDefinition;
+                if (definition.Name == nameParameter)
+                {
+                    Binding binding = keyValuePair.Value;
+                    
+                    if (!(binding is InstanceBinding)) 
+                    { 
+                        TaskDialog.Show("Ошибка",
+                            $"Параметр {nameParameter} должен " +
+                            $"быть параметром экземпляра.");
+                        return false; 
+                    }
+                    else if (!definition.VariesAcrossGroups)
+                    {
+                        TaskDialog.Show("Ошибка", 
+                            $"Параметр {nameParameter} не должен " +
+                            $"выравнивать значения относительно групп.");
+                        return false;
+                    }
+                    else if (window.LookupParameter(nameParameter) is null)
+                    {
+                        TaskDialog.Show("Ошибка",
+                            $"Параметр {nameParameter} должен быть назначен " +
+                            $"категории окно.");
+                        return false;
+                    }
+                    return true;
+                }
+            }
+            TaskDialog.Show("Ошибка", 
+                $"Параметр {nameParameter} не найден в проекте, необходимо " +
+                $"его создать он должен быть параметром экземпляра, и не " +
+                $"должен выравниваться относительно групп.");
+            return true;
         }
 
         public SunAndShadowSettings GetSunAndShadowSettings()
