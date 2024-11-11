@@ -121,7 +121,9 @@ namespace UNI_Tools_AR.CountInsolation
                 }
             }
             
-            return result;
+            return result
+                .Where(sunSegment => sunSegment.points.Count() > 1)
+                .ToList();
         }
     }
     class SunSegment
@@ -135,6 +137,12 @@ namespace UNI_Tools_AR.CountInsolation
         { 
             this.points = points; 
             this.angle = angle; 
+        }
+
+        public double CountTime()
+        {
+            double agnleSecond = 0.00417;
+            return angle / agnleSecond;
         }
     }
 }

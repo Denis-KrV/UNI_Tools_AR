@@ -48,6 +48,19 @@ namespace UNI_Tools_AR.CountInsolation
             return directShape;
         }
 
+        public ElementId GetElementIdForNameParameter(string parameterName)
+        {
+            foreach (KeyValuePair<Definition, Binding> keyValuePair in _document.ParameterBindings)
+            {
+                InternalDefinition definition = keyValuePair.Key as InternalDefinition;
+                if (definition.Name == parameterName)
+                {
+                    return definition.Id;
+                }
+            }
+            return null;
+        }
+
         public bool CheckParameterPorjectInDocument(string nameParameter)
         {
             Element window = new FilteredElementCollector(_document)
@@ -176,6 +189,71 @@ namespace UNI_Tools_AR.CountInsolation
                 fstPoint = point;
             }
             return angle;
+        }
+
+
+        public ParameterFilterElement getOrCreateParameterFilterElements(string nameParameter, double ruleValue)
+        {
+            ICollection<ElementId> elementIds =
+                new List<ElementId> { new ElementId(windowCategoryIntId) };
+
+            FilteredElementCollector collector = new FilteredElementCollector(_document);
+            IList<ParameterFilterElement> parameters = collector
+                .Select(elementFilter => elementFilter as ParameterFilterElement)
+                .Where(elementFilter => elementFilter.Name == nameParameter)
+                .ToList();
+
+            if (parameters.Count > 1) { return parameters.First(); }
+
+            double epsilon = 0;
+
+            ElementId parameterId = GetElementIdForNameParameter(nameParameter);
+            ParameterValueProvider parameterValueProvider = new ParameterValueProvider(parameterId);
+            FilterDoubleRule logicElementFilter = new FilterDoubleRule(
+                parameterValueProvider,
+                new FilterNumericEquals(),
+                ruleValue,
+                epsilon
+            );
+            ElementFilter elementParameterFilter = new ElementParameterFilter(logicElementFilter);
+            IList<ElementFilter> filters = new List<ElementFilter> { elementParameterFilter };
+
+            ElementFilter logicalAndFilter = new LogicalAndFilter(filters);
+
+            ParameterFilterElement parameterFilterElement = ParameterFilterElement
+                .Create(_document, nameParameter, elementIds, logicalAndFilter);
+
+            return parameterFilterElement;
+        }
+
+        public View3D GetORCreateColor3DViewForCountInsolation()
+        {
+            const string NameColorInsolation3DView = "Расчет инсоляции: Цветовая схема.";
+
+            FilteredElementCollector collector = new FilteredElementCollector(_document);
+
+            ViewFamilyType viewFamilyType = collector
+                .OfClass(typeof(ViewFamilyType))
+                .ToElements()
+                .Select(viewType => viewType as ViewFamilyType)
+                .Where(viewType => viewType.ViewFamily == ViewFamily.ThreeDimensional)
+                .First();
+
+            IList<View3D> view3Ds = collector
+                .OfClass(typeof(View3D))
+                .ToElements()
+                .Where(view => view.get_Parameter(BuiltInParameter.VIEW_NAME).AsString() == NameColorInsolation3DView)
+                .Select(view => view as View3D)
+                .ToList();
+
+            if (view3Ds.Count > 0) { return view3Ds.First(); } 
+
+            View3D view3D = View3D.CreateIsometric(_document, viewFamilyType.Id);
+            ParameterFilterElement parameterFilterElementRedColor = getOrCreateParameterFilterElements("", 1);
+            ParameterFilterElement parameterFilterElementOrangeColor = getOrCreateParameterFilterElements("", 2);
+            ParameterFilterElement parameterFilterElementGreenColor = getOrCreateParameterFilterElements("", 3);
+
+            return view3D;
         }
     }
 }

@@ -60,20 +60,21 @@ namespace UNI_Tools_AR.CountInsolation
                     XYZ centerPoint = window.centerPoint;
                     IList<SunSegment> insolationSegments = insolationObject.ReturnNonIntersectionObject(centerPoint);
 
+                    double sumTime = 0;
+
                     foreach (SunSegment insolation in insolationSegments)
                     {
                         IList<GeometryObject> geometryObjects = insolation.points
                             .Select(xyz => Line.CreateBound(centerPoint, xyz + centerPoint))
                             .ToList<GeometryObject>();
 
-                        DirectShape directShape = func.CreateDirectShape(document, geometryObjects);
-                        directShape.LookupParameter("Комментарии").Set($"{insolation.angle}");
+                        //DirectShape directShape = func.CreateDirectShape(document, geometryObjects);
+                        sumTime += insolation.CountTime();
                     }
+                    window.glassObject.LookupParameter("UNI_Инсоляция_Время").Set(sumTime);
                     t.Commit();
                 }
             }
-
-
 
             return Result.Succeeded;
         }
