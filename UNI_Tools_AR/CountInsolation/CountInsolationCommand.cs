@@ -1,8 +1,6 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using UNI_Tools_AR.CreateFinish.FinishWall;
-
 
 using System;
 using System.Collections.Generic;
@@ -11,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.NetworkInformation;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace UNI_Tools_AR.CountInsolation
 {
@@ -28,52 +28,54 @@ namespace UNI_Tools_AR.CountInsolation
             Functions func = new Functions(uiApplication, application, uiDocument, document);
 
             View activeView = document.ActiveView;
-
             SunAndShadowSettings sunAndShadowSettings = func.GetSunAndShadowSettings();
+
+            IList<Element> insolationPoint = func.GetAllInsolationPoints(); 
 
             if (!(activeView.ViewType is ViewType.ThreeD))
             {
-                string titleDialog = "Ошибка";
-                string exceptMessage = "Активный вид должен быть 3Д видом";
-                TaskDialog.Show(titleDialog, exceptMessage);
+                TaskDialog.Show(
+                    Constants.exceptionTitle,
+                    Constants.exceptionActiveViewNotThreeD
+                );
                 return Result.Failed;
             }
-
             if (sunAndShadowSettings is null)
             {
-                string titleDialog = "Ошибка";
-                string exceptMessage = "На активном виде не найдено солнце.";
-                TaskDialog.Show(titleDialog, exceptMessage);
+                TaskDialog.Show(
+                    Constants.exceptionTitle,
+                    Constants.exceptionNotSearchSunInActiveView
+                );
                 return Result.Failed;
             }
+            if (!func.CheckParameterPorjectInDocument(Constants.nameTimeParameter))
+                return Result.Failed;
+            if (!func.CheckParameterPorjectInDocument(Constants.nameTypeParameter))
+                return Result.Failed;
+            if (!(insolationPoint is null)) 
+                return Result.Failed;
 
-            InsolationObject insolationObject = new InsolationObject(document, sunAndShadowSettings, func);
-            GlassObjects glassObjects = new GlassObjects(uiApplication, application, uiDocument, document);
+            InsolationObject insolationObject = 
+                new InsolationObject(document, sunAndShadowSettings, func);
 
-            XYZ centralPoint = insolationObject.CentralPoint;
+            GlassObjects glassObjects = 
+                new GlassObjects(uiApplication, application, uiDocument, document, insolationObject);
 
-            foreach (GlassObject window in glassObjects.windows)
+            using (Transaction t = new Transaction(document, Constants.nameTransaction))
             {
-                using (Transaction t = new Transaction(document, "Test"))
+                t.Start();
+                InsolationProgressBar_Form progressBar =
+                    new InsolationProgressBar_Form(glassObjects.windows.Count(), Constants.nameProcess);
+
+                foreach (GlassObject glassObject in glassObjects.windows)
                 {
-                    t.Start();
-                    XYZ centerPoint = window.centerPoint;
-                    IList<SunSegment> insolationSegments = insolationObject.ReturnNonIntersectionObject(centerPoint);
-
-                    double sumTime = 0;
-
-                    foreach (SunSegment insolation in insolationSegments)
-                    {
-                        IList<GeometryObject> geometryObjects = insolation.points
-                            .Select(xyz => Line.CreateBound(centerPoint, xyz + centerPoint))
-                            .ToList<GeometryObject>();
-
-                        //DirectShape directShape = func.CreateDirectShape(document, geometryObjects);
-                        sumTime += insolation.CountTime();
-                    }
-                    window.glassObject.LookupParameter("UNI_Инсоляция_Время").Set(sumTime);
-                    t.Commit();
+                    glassObject.SetTime(Constants.nameTimeParameter);
+                    glassObject.SetTypeTime(Constants.nameTypeParameter);
+                    progressBar.valueChanged();
+                    progressBar.Show();
                 }
+                progressBar.Close();
+                t.Commit();
             }
 
             return Result.Succeeded;

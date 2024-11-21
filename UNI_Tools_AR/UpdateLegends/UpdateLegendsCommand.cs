@@ -9,6 +9,10 @@ namespace UNI_Tools_AR.UpdateLegends
 
     internal class UpdateLegendsCommand : IExternalCommand
     {
+        const string exceptionTitle = "Возникла ошибка";
+        const string nameTimeParameter = "";
+        const string nameTypeParameter = "";
+
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
             Autodesk.Revit.UI.UIApplication uiapp = commandData.Application;
@@ -19,8 +23,6 @@ namespace UNI_Tools_AR.UpdateLegends
             Functions func = new Functions();
 
             Legends legends = new Legends(doc);
-
-            string exceptionTitle = "Возникла ошибка";
 
             Family family = legends.GetFamilyCreateImage();
             if (family is null)

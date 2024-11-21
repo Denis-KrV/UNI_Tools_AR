@@ -63,6 +63,17 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CopyScheduleFilter\CopyScheduleFilterCommand.cs" />
+    <Compile Include="CopyScheduleFilter\ScheduleCopyFilter.cs" />
+    <Compile Include="CopyScheduleFilter\SelectParameters_Form.xaml.cs">
+      <DependentUpon>SelectParameters_Form.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CopyScheduleFilter\SelectSchedule_Form.xaml.cs">
+      <DependentUpon>SelectSchedule_Form.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CopyScheduleFilter\ValueForFilterField_Form.xaml.cs">
+      <DependentUpon>ValueForFilterField_Form.xaml</DependentUpon>
+    </Compile>
     <Compile Include="CountCoefficient\CoefItems_Form.xaml.cs">
       <DependentUpon>CoefItems_Form.xaml</DependentUpon>
     </Compile>
@@ -71,10 +82,15 @@
     <Compile Include="CountCoefficient\Functions.cs" />
     <Compile Include="CountCoefficient\JsonItem.cs" />
     <Compile Include="CountInsolation\BaseRevitDocumentClass.cs" />
+    <Compile Include="CountInsolation\Constants.cs" />
     <Compile Include="CountInsolation\CountInsolationCommand.cs" />
     <Compile Include="CountInsolation\Functions.cs" />
     <Compile Include="CountInsolation\GlassObjects.cs" />
+    <Compile Include="CountInsolation\InsolationCounter.cs" />
     <Compile Include="CountInsolation\InsolationObject.cs" />
+    <Compile Include="CountInsolation\InsolationProgressBar_Form.xaml.cs">
+      <DependentUpon>InsolationProgressBar_Form.xaml</DependentUpon>
+    </Compile>
     <Compile Include="CreateFinishWithStair\BuilderFinishStair.cs" />
     <Compile Include="CreateFinishWithStair\CreateFinishStairCommand.cs" />
     <Compile Include="CreateFinishWithStair\Funcitons.cs" />
@@ -116,7 +132,23 @@
     <Compile Include="UpdateLegends\UpdaterImage.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="CopyScheduleFilter\SelectParameters_Form.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CopyScheduleFilter\SelectSchedule_Form.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CopyScheduleFilter\ValueForFilterField_Form.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="CountCoefficient\CoefItems_Form.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CountInsolation\InsolationProgressBar_Form.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

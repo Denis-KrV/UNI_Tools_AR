@@ -1,5 +1,6 @@
 ﻿
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Mechanical;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,19 +33,73 @@ namespace UNI_Tools_AR.CountInsolation
             .Select(gElement => gElement as HermiteSpline)
             .ToList();
 
+        public IList<XYZ> sunTimePoint { get; set; }
         public XYZ CentralPoint => XYZ.Zero;
 
-        public ReferenceIntersector referenceIntersector =>
-            new ReferenceIntersector(_document.ActiveView as View3D) { FindReferencesInRevitLinks = true };
+        public ReferenceIntersector referenceIntersector => CreateReferenceIntersector();
 
-        public InsolationObject(Document document, SunAndShadowSettings sunAndShadowObject, Functions functions)
+        public InsolationObject(
+            Document document,
+            SunAndShadowSettings sunAndShadowObject,
+            Functions functions
+        )
         {
             _functions = functions;
             _document = document;
             _sunAndShadowObject = sunAndShadowObject;
+
+            sunTimePoint = GetSunTimePoints();
         }
 
-        public IList<XYZ> GetSunTimePoints()
+        private ReferenceIntersector CreateReferenceIntersector()
+        {
+            ElementFilter notSunClassFilter = 
+                new ElementClassFilter(typeof(SunAndShadowSettings), true);
+
+            FindReferenceTarget findReferenceTargetAll = FindReferenceTarget.All;
+            View3D activeView3D = _document.ActiveView as View3D;
+
+            ReferenceIntersector referenceIntersector =
+                new ReferenceIntersector(notSunClassFilter, findReferenceTargetAll, activeView3D);
+
+            referenceIntersector.FindReferencesInRevitLinks = true;
+
+            return referenceIntersector;
+        }
+
+        public IList<XYZ> CreateRotatePointsInArc(
+            XYZ centerPoint, double radius, XYZ direction, XYZ centerArc
+        )
+        {
+            Transform transformGetCenterPoint = 
+                Transform.CreateRotation(centerPoint, Math.PI);
+
+            XYZ fstPoint = transformGetCenterPoint.OfPoint(direction);
+            XYZ sndPoint = transformGetCenterPoint.OfPoint(fstPoint);
+            XYZ centerPointCurrentRotation = ((fstPoint + sndPoint) / 2); 
+
+            Transform transform = 
+                Transform.CreateRotation(centerPoint, Constants.angleRotation);
+
+            XYZ rotate = direction;
+            IList<XYZ> resultPoint = new List<XYZ>();
+            for (int i = 1; i < Constants.countRotation; i++)
+            {
+                rotate = transform.OfPoint(rotate);
+                XYZ translateInCenterRotationPoint = 
+                    (rotate - centerPointCurrentRotation).Normalize();
+
+                XYZ arcPoint = translateInCenterRotationPoint * radius + centerArc;
+
+                if (arcPoint.Z >= 0) 
+                {
+                    resultPoint.Add(arcPoint);
+                }
+            }
+            return resultPoint;
+        }
+
+        private IList<XYZ> GetSunTimePoints()
         {
             IList<Line> geometryLines = geometry
                 .Where(gElement => gElement is Line)
@@ -76,73 +131,79 @@ namespace UNI_Tools_AR.CountInsolation
 
             Arc geometryArc = Arc.Create(fstArcPoint, sndArcPoint, pointInArc);
 
+            XYZ fstPointArc = geometryArc.GetEndPoint(0);
+            XYZ sndPointArc = geometryArc.GetEndPoint(1);
 
-            return _functions.HalfPastPoint(_functions.HalfPastPoint(geometryArc.Tessellate()));
+            XYZ normalPoint = geometryArc.Normal.Negate();
+            XYZ planeNormalPoint = new XYZ(normalPoint.X, normalPoint.Y, 0).Normalize();
+
+            XYZ centerArc = geometryArc.Center;
+            double radius = geometryArc.Radius;
+
+            XYZ axis = geometryArc.XDirection;
+
+            IList<XYZ> points = 
+                CreateRotatePointsInArc(normalPoint, radius, planeNormalPoint, centerArc);
+            
+            return points;
         }
 
         public IList<SunSegment> ReturnNonIntersectionObject(XYZ insolationCountPoint)
         {
             IList<SunSegment> result = new List<SunSegment>();
-            IList<GeometryObject> geometryObjects = new List<GeometryObject> ();
+
             IList<XYZ> segmentPoint = new List<XYZ>();
-            
-            XYZ fstPoint = null;
-            
-            foreach (XYZ point in GetSunTimePoints())
+
+            foreach (XYZ point in sunTimePoint)
             {
                 ReferenceWithContext refs = referenceIntersector
-                    .FindNearest(insolationCountPoint, point.Normalize());
+                    .FindNearest(insolationCountPoint, point);
 
                 if (refs is null)
-                {
-                    segmentPoint.Add(point);
-
-                    if (fstPoint is null)
-                    {
-                        fstPoint = point;
-                        continue;
-                    }
-
-                    fstPoint = point;
+                { 
+                    segmentPoint.Add(point); 
                 }
-                else
+                else if (segmentPoint.Count > 0)
                 {
-                    if ((fstPoint != null))
-                    {
-                        fstPoint = null;
-
-                        SunSegment sunSegment = 
-                            new SunSegment(segmentPoint, _functions.GetSumAngleInPoints(segmentPoint));
-
-                        result.Add(sunSegment);
-
-                        segmentPoint = new List<XYZ>();
-                    }
+                    SunSegment sunSegment = new SunSegment(segmentPoint);
+                    result.Add(sunSegment);
+                    segmentPoint = new List<XYZ>();
                 }
             }
+            if (segmentPoint.Count > 0)
+            {
+                SunSegment sunSegment = new SunSegment(segmentPoint);
+                result.Add(sunSegment);
+            }
             
-            return result
-                .Where(sunSegment => sunSegment.points.Count() > 1)
-                .ToList();
+            return result;
         }
     }
     class SunSegment
     {
         public XYZ fstPoint => points.First();
         public XYZ sndPoint => points.Last();
+        public double angle => CountAngle();
+        public double time => angle / Constants.angleOneSecond;
 
         public IList<XYZ> points;
-        public double angle;
-        public SunSegment(IList<XYZ> points, double angle)
+        
+        public SunSegment(IList<XYZ> points)
         { 
             this.points = points; 
-            this.angle = angle; 
         }
 
-        public double CountTime()
+        private double CountAngle()
         {
-            double agnleSecond = 0.00417;
-            return angle / agnleSecond;
+            double angle = 0;
+            for (int i = 0; i < points.Count(); i++)
+            {
+                if (i == 0) { continue; }
+                XYZ pointFst = points[i-1];
+                XYZ pointSnd = points[i];
+                angle += pointFst.AngleTo(pointSnd);
+            }
+            return 180 * angle / Math.PI;
         }
     }
 }

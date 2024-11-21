@@ -5,9 +5,6 @@ using System.Windows;
 
 namespace UNI_Tools_AR.UpdateLegends
 {
-    /// <summary>
-    /// Interaction logic for UpdateLegends_Form.xaml
-    /// </summary>
     public partial class UpdateLegends_Form : Window
     {
         private Functions _func;

@@ -17,8 +17,6 @@ namespace UNI_Tools_AR.CountInsolation
         private UIDocument _uiDocument;
         private Document _document;
 
-        private const int windowCategoryIntId = -2000014;
-
         private Options _options => new Options 
         { 
             IncludeNonVisibleObjects = true, 
@@ -64,46 +62,53 @@ namespace UNI_Tools_AR.CountInsolation
         public bool CheckParameterPorjectInDocument(string nameParameter)
         {
             Element window = new FilteredElementCollector(_document)
-                .OfCategoryId(new ElementId(windowCategoryIntId))
+                .OfCategoryId(new ElementId(Constants.windowCategoryIntId))
                 .WhereElementIsNotElementType()
                 .First();
 
-            foreach (KeyValuePair<Definition, Binding> keyValuePair in _document.ParameterBindings)
+            DefinitionBindingMapIterator definitionBindingMapIterator = 
+                _document.ParameterBindings.ForwardIterator();
+
+            string exceptionMessage;
+            while (definitionBindingMapIterator.MoveNext())
             {
-                InternalDefinition definition = keyValuePair.Key as InternalDefinition;
+                Binding binding = definitionBindingMapIterator.Current as Binding;
+                InternalDefinition definition = definitionBindingMapIterator.Key as InternalDefinition;
                 if (definition.Name == nameParameter)
                 {
-                    Binding binding = keyValuePair.Value;
-                    
-                    if (!(binding is InstanceBinding)) 
-                    { 
-                        TaskDialog.Show("Ошибка",
-                            $"Параметр {nameParameter} должен " +
-                            $"быть параметром экземпляра.");
-                        return false; 
+                    if (!(binding is InstanceBinding))
+                    {
+                        exceptionMessage =
+                            $"Параметр {nameParameter} должен быть " +
+                            $"параметром экземпляра.";
+                        TaskDialog.Show(Constants.exceptionTitle, exceptionMessage);
+                        return false;
                     }
                     else if (!definition.VariesAcrossGroups)
                     {
-                        TaskDialog.Show("Ошибка", 
+                        exceptionMessage =
                             $"Параметр {nameParameter} не должен " +
-                            $"выравнивать значения относительно групп.");
+                            $"выравнивать значения относительно групп.";
+                        TaskDialog.Show(Constants.exceptionTitle, exceptionMessage);
                         return false;
                     }
                     else if (window.LookupParameter(nameParameter) is null)
                     {
-                        TaskDialog.Show("Ошибка",
-                            $"Параметр {nameParameter} должен быть назначен " +
-                            $"категории окно.");
+                        exceptionMessage =
+                            $"Параметр {nameParameter} должен быть " +
+                            $"назначен категории окно.";
+                        TaskDialog.Show(Constants.exceptionTitle, exceptionMessage);
                         return false;
                     }
                     return true;
                 }
             }
-            TaskDialog.Show("Ошибка", 
+            exceptionMessage = 
                 $"Параметр {nameParameter} не найден в проекте, необходимо " +
                 $"его создать он должен быть параметром экземпляра, и не " +
-                $"должен выравниваться относительно групп.");
-            return true;
+                $"должен выравниваться относительно групп.";
+            TaskDialog.Show(Constants.exceptionTitle, exceptionMessage);
+            return false;
         }
 
         public SunAndShadowSettings GetSunAndShadowSettings()
@@ -119,48 +124,39 @@ namespace UNI_Tools_AR.CountInsolation
             }
             return null;
         }
-
-        public IList<XYZ> HalfPastPoint(IList<XYZ> points)
-        {
-            XYZ fstPoint = null;
-
-            IList<XYZ> result = new List<XYZ>();
-            foreach (XYZ point in points)
-            {
-                if (fstPoint is null)
-                {
-                    fstPoint = point;
-                    result.Add(point);
-                    continue;
-                }
-
-
-                XYZ centerPoint = (fstPoint + point) / 2;
-
-                result.Add(centerPoint);
-                result.Add(point);
-
-                fstPoint = point;
-            }
-
-            return result;
-        }
-
         public IList<Element> GetAllWindows()
         {
-            IList<Element> windows = new FilteredElementCollector(_document, _document.ActiveView.Id)
-                .OfCategoryId(new ElementId(windowCategoryIntId))
-                .WhereElementIsNotElementType()
-                .ToElements();
+            IList<Element> windows = 
+                new FilteredElementCollector(_document, _document.ActiveView.Id)
+                    .OfCategoryId(new ElementId(Constants.windowCategoryIntId))
+                    .WhereElementIsNotElementType()
+                    .ToElements();
 
             return windows;
+        }
+        
+        public IList<Element> GetAllInsolationPoints()
+        {
+            FilterStringRule stringRule = new FilterStringRule(
+                new ParameterValueProvider(new ElementId(BuiltInParameter.ELEM_FAMILY_PARAM)),
+                new FilterStringEquals(),
+                Constants.insolationPointFamilyName);
+
+            ElementParameterFilter parameterFilter = new ElementParameterFilter(stringRule);
+
+            IList<Element> insolationPoints = 
+                new FilteredElementCollector(_document, _document.ActiveView.Id)
+                    .OfClass(typeof(FamilyInstance))
+                    .WherePasses(parameterFilter)
+                    .ToElements();
+
+            if (insolationPoints.Count == 0) return null; 
+            return insolationPoints;
         }
 
         public XYZ GetCenterPointElement(Element element)
         {
-            BoundingBoxXYZ boundingBoxXYZ = element
-                .get_Geometry(_options)
-                .GetBoundingBox();
+            BoundingBoxXYZ boundingBoxXYZ = element.get_Geometry(_options).GetBoundingBox();
             return (boundingBoxXYZ.Max + boundingBoxXYZ.Min) / 2; 
         }
 
@@ -191,11 +187,11 @@ namespace UNI_Tools_AR.CountInsolation
             return angle;
         }
 
-
-        public ParameterFilterElement getOrCreateParameterFilterElements(string nameParameter, double ruleValue)
+        public ParameterFilterElement getOrCreateParameterFilterElements(
+            string nameParameter, double ruleValue)
         {
             ICollection<ElementId> elementIds =
-                new List<ElementId> { new ElementId(windowCategoryIntId) };
+                new List<ElementId> { new ElementId(Constants.windowCategoryIntId) };
 
             FilteredElementCollector collector = new FilteredElementCollector(_document);
             IList<ParameterFilterElement> parameters = collector
@@ -226,32 +222,33 @@ namespace UNI_Tools_AR.CountInsolation
             return parameterFilterElement;
         }
 
-        public View3D GetORCreateColor3DViewForCountInsolation()
+        public View3D GetORCreateColor3DViewForCountInsolation(string nameParameter)
         {
-            const string NameColorInsolation3DView = "Расчет инсоляции: Цветовая схема.";
 
             FilteredElementCollector collector = new FilteredElementCollector(_document);
 
             ViewFamilyType viewFamilyType = collector
                 .OfClass(typeof(ViewFamilyType))
-                .ToElements()
                 .Select(viewType => viewType as ViewFamilyType)
                 .Where(viewType => viewType.ViewFamily == ViewFamily.ThreeDimensional)
                 .First();
 
             IList<View3D> view3Ds = collector
                 .OfClass(typeof(View3D))
-                .ToElements()
-                .Where(view => view.get_Parameter(BuiltInParameter.VIEW_NAME).AsString() == NameColorInsolation3DView)
+                .Where(view => view.get_Parameter(BuiltInParameter.VIEW_NAME).AsString() ==
+                                Constants.exceptionActiveViewNotThreeD)
                 .Select(view => view as View3D)
                 .ToList();
 
             if (view3Ds.Count > 0) { return view3Ds.First(); } 
 
             View3D view3D = View3D.CreateIsometric(_document, viewFamilyType.Id);
-            ParameterFilterElement parameterFilterElementRedColor = getOrCreateParameterFilterElements("", 1);
-            ParameterFilterElement parameterFilterElementOrangeColor = getOrCreateParameterFilterElements("", 2);
-            ParameterFilterElement parameterFilterElementGreenColor = getOrCreateParameterFilterElements("", 3);
+            ParameterFilterElement parameterFilterElementRedColor =
+                getOrCreateParameterFilterElements(nameParameter, 1);
+            ParameterFilterElement parameterFilterElementOrangeColor =
+                getOrCreateParameterFilterElements(nameParameter, 2);
+            ParameterFilterElement parameterFilterElementGreenColor = 
+                getOrCreateParameterFilterElements(nameParameter, 3);
 
             return view3D;
         }

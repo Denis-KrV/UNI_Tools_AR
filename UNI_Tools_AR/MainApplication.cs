@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.UI;
+using UNI_Tools_AR.CopyScheduleFilter;
 using UNI_Tools_AR.CountCoefficient;
 using UNI_Tools_AR.CreateFinish;
 using UNI_Tools_AR.Properties;
@@ -11,9 +12,11 @@ namespace UNI_Tools_AR
     {
         public Result OnStartup(UIControlledApplication application)
         {
-            VCRevitRibbonUtil.Tab UNITab = Ribbon.GetApplicationRibbon(application).Tab("UNI Tools AR");
+            VCRevitRibbonUtil.Tab UNITab = Ribbon
+                .GetApplicationRibbon(application).Tab("UNI Tools AR");
 
             Panel CoefficientPanel = UNITab.Panel("Расчет коэффициентов");
+
             CoefficientPanel
                 .CreateButton<CreateCoefficentCommand>("Таблица коэффициентов", "Таблица", b => b
                     .SetLargeImage(Resources.CoeffTable_32x32)
@@ -55,6 +58,14 @@ namespace UNI_Tools_AR
                     .SetSmallImage(Resources.FinishCeiling_16x16)
                     .SetLongDescription("Создает отделку потолков по помещениям.")
                 );
+
+            Panel FilterSchedule = UNITab.Panel("Спецификации");
+
+            FilterSchedule
+                .CreateButton<CopyScheduleFilterCommand>("Копирование параметров", "Копирование параметров", b => b
+                    .SetLargeImage(Resources.UpdateCoeff_32x32)
+                    .SetSmallImage(Resources.UpdateCoeff_16x16)
+                    .SetLongDescription("Test"));
 
             return Result.Succeeded;
         }
