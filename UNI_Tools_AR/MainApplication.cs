@@ -9,8 +9,8 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using System.Linq;
 using Microsoft.VisualBasic;
+using System.Collections.Generic;
 using Panel = VCRevitRibbonUtil.Panel;
-
 
 namespace UNI_Tools_AR
 {
@@ -27,14 +27,14 @@ namespace UNI_Tools_AR
                 .CreateButton<CreateCoefficentCommand>("Таблица коэффициентов", "Таблица", b => b
                     .SetLargeImage(Resources.CoeffTable_32x32)
                     .SetSmallImage(Resources.CoeffTable_16x16)
-                    .SetLongDescription("Создает/Обновляет коэффциенты глобальных параметров")
+                    .SetLongDescription("Создает/Обновляет коэффициенты глобальных параметров")
                 );
 
             CoefficientPanel
-                .CreateButton<CountCoefficentCommand>("Перерасчет коэффициенты", "Обновить", b => b
+                .CreateButton<CountCoefficentCommand>("Перерасчет коэффициентов", "Обновить", b => b
                     .SetLargeImage(Resources.UpdateCoeff_32x32)
                     .SetSmallImage(Resources.UpdateCoeff_16x16)
-                    .SetLongDescription("Обновляет коэффциенты глобальных параметров")
+                    .SetLongDescription("Обновляет коэффициенты глобальных параметров")
                 );
 
             VCRevitRibbonUtil.Panel LegendPanel = UNITab.Panel("Легенды");
@@ -53,7 +53,7 @@ namespace UNI_Tools_AR
                     .SetLargeImage(Resources.CreateFinishWall_32x32)
                     .SetSmallImage(Resources.CreateFinishWall_16x16)
                     .SetLongDescription("Создает отделку стен по помещениям."))
-                
+
                 .CreateButton<CreateFloorCommand>("Отделка полов", "Отделка полов", b => b
                     .SetLargeImage(Resources.FinishFloor_32x32)
                     .SetSmallImage(Resources.FinishFloor_16x16)
@@ -71,7 +71,7 @@ namespace UNI_Tools_AR
                 .CreateButton<CopyScheduleFilterCommand>("Копирование параметров", "Копирование параметров", b => b
                     .SetLargeImage(Resources.UpdateCoeff_32x32)
                     .SetSmallImage(Resources.UpdateCoeff_16x16)
-                    .SetLongDescription("Test"));
+                    .SetLongDescription("Копирование параметров фильтрации"));
 
             Panel SheetPanel = UNITab.Panel("Листы");
             SheetPanel.CreateButton<BatchRenameSheetsCommand>(
@@ -79,14 +79,15 @@ namespace UNI_Tools_AR
                 "Одинаковые\nномера",
                 b => b.SetLongDescription("Выдаёт всем выделенным листам одинаковый видимый номер (Sheet Number)."));
 
-
             return Result.Succeeded;
         }
+
         public Result OnShutdown(UIControlledApplication application)
         {
             return Result.Succeeded;
         }
     }
+
     [Transaction(TransactionMode.Manual)]
     public class BatchRenameSheetsCommand : IExternalCommand
     {
@@ -106,9 +107,9 @@ namespace UNI_Tools_AR
                 return Result.Cancelled;
 
             var sheets = uiDoc.Selection.GetElementIds()
-                                       .Select(id => doc.GetElement(id))
-                                       .OfType<ViewSheet>()
-                                       .ToList();
+                             .Select(id => doc.GetElement(id))
+                             .OfType<ViewSheet>()
+                             .ToList();
 
             if (sheets.Count == 0)
             {
@@ -117,11 +118,11 @@ namespace UNI_Tools_AR
             }
 
             var usedNumbers = new FilteredElementCollector(doc)
-                                .OfClass(typeof(ViewSheet))
-                                .Cast<ViewSheet>()
-                                .Where(vs => !sheets.Contains(vs))
-                                .Select(vs => vs.SheetNumber)
-                                .ToHashSet();
+                             .OfClass(typeof(ViewSheet))
+                             .Cast<ViewSheet>()
+                             .Where(vs => !sheets.Contains(vs))
+                             .Select(vs => vs.SheetNumber)
+                             .ToHashSet();
 
             int suffix = 0;
             using (Transaction t = new Transaction(doc, "Set identical visible sheet numbers"))
@@ -143,8 +144,7 @@ namespace UNI_Tools_AR
             }
 
             TaskDialog.Show("Одинаковые номера листов", $"Изменено листов: {sheets.Count}");
-                     return Result.Succeeded;
+            return Result.Succeeded;
         }
     }
-
 }

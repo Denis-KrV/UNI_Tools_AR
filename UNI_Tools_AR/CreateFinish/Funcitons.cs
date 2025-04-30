@@ -820,7 +820,7 @@ namespace UNI_Tools_AR.CreateFinish
                 return false;
             }
             Definition parameterDefinition = checkParameter.Definition;
-            if (parameterDefinition.GetDataType().TypeId == SpecTypeId.String.Text)
+            if (parameterDefinition.GetDataType().TypeId.Equals(SpecTypeId.String.Text))
             {
                 TaskDialog.Show(exceptTitleName, exceptMessage);
                 return false;
