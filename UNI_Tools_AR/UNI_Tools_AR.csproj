@@ -286,4 +286,13 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets'))" />
   </Target>
+	<Target Name="PostBuild" AfterTargets="Build">
+		<PropertyGroup>
+			<RevitAddinPath>$(AppData)\Autodesk\Revit\Addins\2021\UNI_Tools_AR\</RevitAddinPath>
+		</PropertyGroup>
+		<MakeDir Directories="$(RevitAddinPath)" />
+		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(RevitAddinPath)" />
+		<Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(RevitAddinPath)" />
+		<Copy SourceFiles="$(ProjectDir)UNI_Tools_AR.addin" DestinationFolder="$(RevitAddinPath)" />
+	</Target>
 </Project>
