@@ -809,7 +809,7 @@ namespace UNI_Tools_AR.CreateFinish
             string exceptMessage = string.Empty;
             if (checkParameter is null)
             {
-                //exceptMessage = $"У категории {} отсутвует параметр экземпляра {}.";
+                exceptMessage = $"У категории \"{categoryName}\" отсутствует параметр \"{nameParameter}\".";
                 TaskDialog.Show(exceptTitleName, exceptMessage);
                 return false;
             }
@@ -820,12 +820,12 @@ namespace UNI_Tools_AR.CreateFinish
                 return false;
             }
             Definition parameterDefinition = checkParameter.Definition;
-            if (parameterDefinition.ParameterType != ParameterType.Currency)
+            if (parameterDefinition.GetDataType().TypeId == SpecTypeId.String.Text)
             {
-                //exceptMessage = $"Параметр экземпляра {} должен быть типом денежная единица.";
                 TaskDialog.Show(exceptTitleName, exceptMessage);
                 return false;
             }
+
 
             return true;
         }
