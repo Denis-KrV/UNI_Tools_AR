@@ -88,8 +88,8 @@ namespace UNI_Tools_AR
             // Добавляем кнопку "Одинаковые номера" для плагина BatchRenameSheets
             SheetsPanel
                 .CreateButton<BatchRenameSheetsCommand>("Одинаковые номера", "Одинаковые\nномера", b => b
-                    .SetLargeImage(Resources.UpdateLegends_32x32)  // Используем существующую иконку
-                    .SetSmallImage(Resources.UpdateLegends_16x16)
+                    .SetLargeImage(Resources.SameSheetNumber_32х32)  // Используем иконку для одинаковых номеров
+                    .SetSmallImage(Resources.SameSheetNumber_16х16)
                     .SetLongDescription("Выдаёт всем выделенным листам одинаковый видимый номер (Sheet Number).")
                 );
 
