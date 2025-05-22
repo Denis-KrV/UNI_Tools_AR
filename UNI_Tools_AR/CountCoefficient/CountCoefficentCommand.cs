@@ -11,8 +11,6 @@ namespace UNI_Tools_AR.CountCoefficient
     {
         static Autodesk.Revit.UI.UIApplication _uiapp;
         static Autodesk.Revit.ApplicationServices.Application _app;
-        static Autodesk.Revit.UI.UIDocument _uidoc;
-        static Autodesk.Revit.DB.Document _doc;
 
         static Functions _function;
 

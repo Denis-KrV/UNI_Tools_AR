@@ -515,9 +515,7 @@ namespace UNI_Tools_AR.CreateFinish.FinishWall
 
         public IList<Wall> CreateFinishWall(double offset, double heigth = 0, bool skipNoneSegments = false)
         {
-            bool isStructural = false;
-            bool flip = false;
-
+            // Removed unused variable 'flip'
             WallType wallType = document.GetElement(new ElementId(100918)) as WallType;
             double halfPastWallWith = wallType.Width / 2;
 
@@ -557,176 +555,11 @@ namespace UNI_Tools_AR.CreateFinish.FinishWall
 
             GetJoinWallCurves(segmentItems, halfPastWallWith);
 
-
-            //IList<Wall> walls = GetJoinWallCurves(segmentItems, halfPastWallWith)
-            //    .Select(line => Wall.Create(document, line, wallType.Id, levelIdRoom, 3, 0, flip, isStructural))
-            //    .ToList();
-
-            //foreach (Face face in wallFaces)
-            //{
-            //XYZ centerFace = func.GetCenterPointFromFace(face);
-
-            //IList<Curve> curves;
-
-            //BoundarySegment boundarySegment = GetSegmentSubsetFromFace(face, out curves);
-            //}
-
-            //    if (skipNoneSegments && (boundarySegment is null)) { continue; }
-            //    if (func.SegmentIsModelLine(document, boundarySegment)) { continue; }
-
-            //    FinishWallItem wallItem = GetWallTypeFromBoundarySegment(boundarySegment);
-
-            //    if (wallItem is null) { continue; }
-            //    if (wallItem.finishWall is null) { continue; }
-
-            //    WallType wallType = wallItem.finishWall.wallType;
-
-            //    if (wallType is null) { continue; }
-
-            //    ElementId wallTypeId = wallType.Id;
-
-            //    IList<XYZ> allPointsFromCurves = func.GetAllXYZPointFromCurves(curves);
-
-            //    double minZ = allPointsFromCurves.Select(point => point.Z).Min();
-
-            //    double maxZ = allPointsFromCurves.Select(point => point.Z).Max();
-
-            //    XYZ minZPoint = allPointsFromCurves.Where(point => point.Z == minZ).First();
-
-            //    XYZ maxZPoint = allPointsFromCurves.Where(point => point.Z == maxZ).First();
-
-            //    double baseOffsetHeigth = minZ - bottomLevelHeigth.AsDouble();
-
-            //    double topHeigthWall;
-            //    if (heigth != 0)
-            //    {
-            //        double convertHeigth = func.UnitConverter(heigth, true, bottomLevelHeigth.GetUnitTypeId());
-            //        topHeigthWall = convertHeigth;
-            //    }
-            //    else
-            //    {
-            //        topHeigthWall = maxZ - bottomLevelHeigth.AsDouble();
-            //    }
-
-            //    double halfPastWallWith = wallType.Width / 2;
-
-            //    if (face is PlanarFace)
-            //    {
-            //        Wall newPlanarWall = null;
-
-            //        PlanarFace planarFace = face as PlanarFace;
-
-            //        XYZ faceNormal = planarFace.FaceNormal;
-            //        XYZ directionWall = -faceNormal * halfPastWallWith;
-            //        Transform translate = Transform.CreateTranslation(directionWall);
-
-            //        IList<Curve> curvesHalfPastWall = curves
-            //            .Select(curve => curve.CreateTransformed(translate))
-            //            .ToList();
-
-            //        Curve bottomCurve = func.GetBottomCurve(curvesHalfPastWall, minZ);
-
-            //        try
-            //        {
-            //            if (heigth != 0)
-            //            {
-            //                //newPlanarWall = Wall.Create(
-            //                //    document, bottomCurve, wallTypeId, levelIdRoom, topHeigthWall, baseOffsetHeigth, flip, isStructural);
-            //            }
-            //            else
-            //            {
-            //                //newPlanarWall = Wall.Create(
-            //                //    document, curvesHalfPastWall, wallTypeId, levelIdRoom, isStructural, directionWall);
-            //            }
-            //        }
-            //        catch (Autodesk.Revit.Exceptions.InvalidOperationException)
-            //        {
-            //            //newPlanarWall = Wall.Create(
-            //            //    document, bottomCurve, wallTypeId, levelIdRoom, topHeigthWall, baseOffsetHeigth, flip, isStructural);
-            //        }
-
-            //        if (newPlanarWall is null) { continue; }
-
-            //        bool resultSetParameterWall = SetParametersWall(
-            //            newPlanarWall, offset, boundarySegment, wallItem.hasGround, baseOffsetHeigth, topHeigthWall);
-
-            //        if (resultSetParameterWall)
-            //        {
-            //            newFinishWalls.Add(newPlanarWall);
-            //        }
-            //    }
-            //    else if (face is CylindricalFace)
-            //    {
-            //        Wall newArcWall = null;
-
-            //        CylindricalFace cylindricalFace = face as CylindricalFace;
-
-            //        Arc arc = func.GetBottomArcFromCylindricalFace(curves);
-
-            //        Arc arcHalfPastWall = func.SetArcFromHalfPastWidth(room, halfPastWallWith, centerFace, arc);
-
-            //        //newArcWall = Wall.Create(
-            //        //    document, arcHalfPastWall, wallTypeId, levelIdRoom, topHeigthWall, baseOffsetHeigth, flip, isStructural);
-
-            //        if (newArcWall is null) { continue; }
-
-            //        bool resultSetParameterWall = SetParametersWall(
-            //            newArcWall,
-            //            offset,
-            //            boundarySegment,
-            //            wallItem.hasGround,
-            //            baseOffsetHeigth,
-            //            topHeigthWall
-            //        );
-
-            //        if (resultSetParameterWall)
-            //        {
-            //            newFinishWalls.Add(newArcWall);
-            //        }
-            //    }
-            //    else if (face is RuledFace)
-            //    {
-            //        RuledFace ruledFace = face as RuledFace;
-
-            //        Wall newSplineWall = null;
-
-            //        double ruledHalfPastWallWith = halfPastWallWith + 0.009;
-
-            //        HermiteSpline bottomHermiteSpline = func.GetBottomHermiteSpline(curves, minZ);
-
-            //        if (bottomHermiteSpline is null) { continue; }
-
-            //        IList<Line> lines = func.SetSplineFromHalfPastWidth(bottomHermiteSpline, ruledHalfPastWallWith);
-            //        foreach (Line line in lines)
-            //        {
-            //            double currentZCoord = line.GetEndPoint(0).Z;
-            //            baseOffsetHeigth = currentZCoord - bottomLevelHeigth.AsDouble();
-
-            //            //newSplineWall = Wall.Create(document, line, wallTypeId, levelIdRoom, topHeigthWall, baseOffsetHeigth, flip, isStructural);
-
-            //            if (newSplineWall is null) { continue; }
-
-            //            bool resultSetParameterWall = SetParametersWall(
-            //                newSplineWall, offset, boundarySegment, wallItem.hasGround, baseOffsetHeigth, topHeigthWall);
-
-            //            if (resultSetParameterWall)
-            //            {
-            //                newFinishWalls.Add(newSplineWall);
-            //            }
-            //        }
-            //    }
-            //}
-
-            //JoinFinishWalls(newFinishWalls);
-
             return newFinishWalls;
         }
 
         //public IList<Wall> CreateFinishWallForHeigth(double offset, double heigth = 0, bool skipNoneSegments = false)
         //{
-        //    bool isStructural = false;
-        //    bool flip = false;
-
         //    ElementId levelIdRoom = room.LevelId;
 
         //    Level levelBase = (Level)document.GetElement(levelIdRoom);

@@ -1,10 +1,13 @@
 ﻿using Autodesk.Revit.UI;
+using System;
+using System.Windows.Media.Imaging;
 using UNI_Tools_AR.CopyScheduleFilter;
 using UNI_Tools_AR.CountCoefficient;
 using UNI_Tools_AR.CreateFinish;
 using UNI_Tools_AR.Properties;
 using UNI_Tools_AR.UpdateLegends;
 using VCRevitRibbonUtil;
+using BatchRenameSheets; // Добавьте ссылку на пространство имен BatchRenameSheets
 
 namespace UNI_Tools_AR
 {
@@ -12,8 +15,20 @@ namespace UNI_Tools_AR
     {
         public Result OnStartup(UIControlledApplication application)
         {
+            // Используем имя "UNI_Tools_AR" вместо "UNI Tools"
+            string tabName = "UNI_Tools_AR";
+            
+            try
+            {
+                application.CreateRibbonTab(tabName);
+            }
+            catch (Autodesk.Revit.Exceptions.ArgumentException)
+            {
+                // Вкладка уже существует, продолжаем настройку
+            }
+
             VCRevitRibbonUtil.Tab UNITab = Ribbon
-                .GetApplicationRibbon(application).Tab("UNI Tools AR");
+                .GetApplicationRibbon(application).Tab(tabName);  // Используем ту же переменную tabName
 
             Panel CoefficientPanel = UNITab.Panel("Расчет коэффициентов");
 
@@ -66,6 +81,17 @@ namespace UNI_Tools_AR
                     .SetLargeImage(Resources.UpdateCoeff_32x32)
                     .SetSmallImage(Resources.UpdateCoeff_16x16)
                     .SetLongDescription("Test"));
+
+            // Добавляем новую панель "Листы"
+            Panel SheetsPanel = UNITab.Panel("Листы");
+
+            // Добавляем кнопку "Одинаковые номера" для плагина BatchRenameSheets
+            SheetsPanel
+                .CreateButton<BatchRenameSheetsCommand>("Одинаковые номера", "Одинаковые\nномера", b => b
+                    .SetLargeImage(Resources.UpdateLegends_32x32)  // Используем существующую иконку
+                    .SetSmallImage(Resources.UpdateLegends_16x16)
+                    .SetLongDescription("Выдаёт всем выделенным листам одинаковый видимый номер (Sheet Number).")
+                );
 
             return Result.Succeeded;
         }

@@ -66,7 +66,8 @@ namespace UNI_Tools_AR.CountCoefficient
             }
             else
             {
-                GlobalParameter newGlobalParameter = GlobalParameter.Create(_doc, nameGlobalParameter, ParameterType.Number);
+                // Updated to use ForgeTypeId instead of ParameterType
+                GlobalParameter newGlobalParameter = GlobalParameter.Create(_doc, nameGlobalParameter, SpecTypeId.Number);
                 return newGlobalParameter;
             }
         }

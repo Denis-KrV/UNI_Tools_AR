@@ -191,7 +191,6 @@ namespace UNI_Tools_AR.CreateFinishWithStair
         public IList<Wall> CreateFinishWalls(IList<Face> verticalFaces, WallType wallType)
         {
             bool isStructural = false;
-            bool flip = false;
 
             ElementId wallTypeId = wallType.Id;
             ElementId levelId = stair
