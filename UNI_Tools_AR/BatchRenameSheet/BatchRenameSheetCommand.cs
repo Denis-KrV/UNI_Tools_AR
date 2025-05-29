@@ -12,19 +12,25 @@ namespace UNI_Tools_AR.BatchRenameSheet
     [Transaction(TransactionMode.Manual)]
     public class BatchRenameSheetCommand : IExternalCommand
     {
-        // Невидимый символ Unicode для создания уникальных номеров
-        private const char Zwsp = '\u200B';
+        // Основной невидимый символ Unicode
+        private const char ZwspMain = '\u200B'; // Zero Width Space
         
-        // Автоматический выбор режима (true = использовать невидимые символы)
-        private const bool AUTO_MODE_INVISIBLE_CHARS = true;
+        // Дополнительный символ для увеличения уникальности в партии
+        private const char ZwspAlt = '\u200C'; // Zero Width Non-Joiner
+        
+        // Символ для отделения партий при сортировке (используется с разным количеством)
+        private const char ZwspSort = '\uFEFF'; // Zero Width No-Break Space
+        
+        // Счетчик сеансов нумерации
+        private static int batchCounter = 0;
 
         public Result Execute(ExternalCommandData data, ref string message, ElementSet elements)
         {
             UIDocument uiDoc = data.Application.ActiveUIDocument;
             Document doc = uiDoc.Document;
             
-            // Автоматически используем режим с невидимыми символами
-            bool useInvisibleChars = AUTO_MODE_INVISIBLE_CHARS;
+            // Увеличиваем счетчик для этой партии выделения
+            batchCounter++;
             
             string baseNumber = Microsoft.VisualBasic.Interaction.InputBox(
                 "Введите начальный номер для нумерации (например, 1).",
@@ -40,68 +46,95 @@ namespace UNI_Tools_AR.BatchRenameSheet
                 return Result.Cancelled;
             }
 
-            var sheets = uiDoc.Selection.GetElementIds()
-                                       .Select(id => doc.GetElement(id))
-                                       .OfType<ViewSheet>()
-                                       .OrderBy(sheet => sheet.Name) // Сортировка листов
-                                       .ToList();
-            if (sheets.Count == 0)
+            // Получаем выбранные элементы
+            ICollection<ElementId> selectedIds = uiDoc.Selection.GetElementIds();
+            
+            // Проверка выбраны ли листы
+            if (selectedIds.Count == 0)
             {
                 TaskDialog.Show("Последовательная нумерация листов", "Выберите листы для нумерации!");
                 return Result.Cancelled;
             }
+            
+            // Получаем выбранные листы
+            List<ViewSheet> selectedSheets = new List<ViewSheet>();
+            
+            foreach (ElementId id in selectedIds)
+            {
+                Element element = doc.GetElement(id);
+                if (element is ViewSheet)
+                {
+                    selectedSheets.Add(element as ViewSheet);
+                }
+            }
+            
+            if (selectedSheets.Count == 0)
+            {
+                TaskDialog.Show("Последовательная нумерация листов", "Выбранные элементы не содержат листов!");
+                return Result.Cancelled;
+            }
 
-            // Получаем все используемые номера листов (кроме выбранных)
-            var usedNumbers = new FilteredElementCollector(doc)
-                                .OfClass(typeof(ViewSheet))
-                                .Cast<ViewSheet>()
-                                .Where(vs => !sheets.Contains(vs))
-                                .Select(vs => vs.SheetNumber)
-                                .ToHashSet();
+            // Получаем все используемые номера листов
+            HashSet<string> usedNumbers = new HashSet<string>();
+            FilteredElementCollector collector = new FilteredElementCollector(doc);
+            foreach (ViewSheet sheet in collector.OfClass(typeof(ViewSheet)))
+            {
+                if (!selectedSheets.Contains(sheet))
+                {
+                    usedNumbers.Add(sheet.SheetNumber);
+                }
+            }
 
             using (Transaction t = new Transaction(doc, "Последовательная нумерация листов"))
             {
                 t.Start();
                 int sequenceNumber = startNumber;
                 
-                foreach (var sheet in sheets)
+                // Создаем уникальный сортировочный маркер партии
+                // Используем разное количество символов для разных партий:
+                // Партия 1 - нет маркера
+                // Партия 2 - ZwspSort (1 символ)
+                // Партия 3 - ZwspSort + ZwspSort (2 символа)
+                // И так далее...
+                string sortMarker = "";
+                if (batchCounter > 1)
                 {
-                    string newSheetNumber;
+                    // Начиная со второй партии добавляем маркер в начало номера
+                    sortMarker = new string(ZwspSort, batchCounter - 1);
+                }
+                
+                // Создаем уникальный маркер партии для разрешения коллизий
+                string batchMarker = new string(ZwspMain, batchCounter % 5); 
+                
+                foreach (ViewSheet sheet in selectedSheets)
+                {
+                    string baseSheetNumber = sequenceNumber.ToString();
                     
-                    if (useInvisibleChars)
+                    // Добавляем сортировочный маркер в НАЧАЛО номера для влияния на сортировку
+                    // Добавляем маркер партии в КОНЕЦ номера для разрешения коллизий в разных партиях
+                    string newSheetNumber = sortMarker + baseSheetNumber + batchMarker;
+                    
+                    // Если такой номер уже используется, добавляем дополнительные невидимые символы
+                    int suffix = 0;
+                    while (usedNumbers.Contains(newSheetNumber))
                     {
-                        // Вариант с невидимыми символами
-                        string baseSheetNumber = sequenceNumber.ToString();
-                        int suffix = 0;
-                        
-                        do
-                        {
-                            newSheetNumber = suffix == 0 ? baseSheetNumber : baseSheetNumber + new string(Zwsp, suffix);
-                            suffix++;
-                        } while (usedNumbers.Contains(newSheetNumber));
-                    }
-                    else
-                    {
-                        // Вариант с пропуском занятых номеров
-                        do
-                        {
-                            newSheetNumber = sequenceNumber.ToString();
-                            sequenceNumber++;
-                        } while (usedNumbers.Contains(newSheetNumber));
+                        suffix++;
+                        // Дополнительные символы добавляем в конец
+                        newSheetNumber = sortMarker + baseSheetNumber + batchMarker + new string(ZwspAlt, suffix);
                     }
                     
+                    // Устанавливаем новый номер листа
                     sheet.get_Parameter(BuiltInParameter.SHEET_NUMBER).Set(newSheetNumber);
                     usedNumbers.Add(newSheetNumber);
                     
-                    // Увеличиваем номер только для варианта с невидимыми символами
-                    if (useInvisibleChars)
-                        sequenceNumber++;
+                    // Увеличиваем номер для следующего листа
+                    sequenceNumber++;
                 }
                 
                 t.Commit();
             }
 
-            TaskDialog.Show("Последовательная нумерация листов", $"Пронумеровано листов: {sheets.Count}");
+            TaskDialog.Show("Последовательная нумерация листов", $"Пронумеровано листов: {selectedSheets.Count}");
             return Result.Succeeded;
         }
     }
