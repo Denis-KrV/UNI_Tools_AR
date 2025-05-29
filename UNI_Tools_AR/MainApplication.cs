@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.UI;
 using System;
 using System.Windows.Media.Imaging;
+using UNI_Tools_AR.BatchRenameSheet;
 using UNI_Tools_AR.CopyScheduleFilter;
 using UNI_Tools_AR.CountCoefficient;
 using UNI_Tools_AR.CreateFinish;
@@ -91,6 +92,12 @@ namespace UNI_Tools_AR
                     .SetLargeImage(Resources.SameSheetNumber_32х32)  // Используем иконку для одинаковых номеров
                     .SetSmallImage(Resources.SameSheetNumber_16х16)
                     .SetLongDescription("Выдаёт всем выделенным листам одинаковый видимый номер (Sheet Number).")
+                )
+                // Добавляем новую кнопку "Последовательные номера"
+                .CreateButton<BatchRenameSheetCommand>("Последовательные номера", "Последовательные\nномера", b => b
+                    .SetLargeImage(Resources.SameSheetNumber_32х32) // Используем ту же иконку
+                    .SetSmallImage(Resources.SameSheetNumber_16х16)
+                    .SetLongDescription("Назначает выделенным листам последовательную нумерацию.")
                 );
 
             return Result.Succeeded;

@@ -235,7 +235,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <None Include="app.config" />
+    <None Include="CopyToAllRevit.bat" />
+    <None Include="CopyToRevit2021.bat" />
     <None Include="packages.config" />
+    <None Include="PostBuildScript.ps1" />
     <None Include="Resources\finish_wall_Items.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -300,9 +303,16 @@
   <ItemGroup>
     <None Include="Resources\FinishCeiling_16x16.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="PostBuildCommand.txt" />
+    <Content Include="PostBuild_Setup_Instructions.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>call "$(ProjectDir)CopyToRevit2021.bat"</PostBuildEvent>
   </PropertyGroup>
 </Project>

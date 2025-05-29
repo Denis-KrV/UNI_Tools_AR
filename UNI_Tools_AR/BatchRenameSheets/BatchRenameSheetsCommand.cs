@@ -18,7 +18,7 @@ namespace BatchRenameSheets
             string baseNumber = Microsoft.VisualBasic.Interaction.InputBox(
                 "¬ведите номер, который должен отображатьс€ у всех выделенных листов.",
                 "ќдинаковые номера листов",
-                "A-100");
+                "1");
             if (string.IsNullOrWhiteSpace(baseNumber))
                 return Result.Cancelled;
 
